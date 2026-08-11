@@ -1,0 +1,41 @@
+export const ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    VERIFY_OTP: '/auth/verify-otp',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+    ME: '/auth/me',
+  },
+  STUDENT: {
+    PROFILE: '/student/profile',
+    ROADMAPS: '/student/roadmaps',
+    COURSES: '/student/courses',
+    ASSESSMENTS: '/student/assessments',
+    JOBS: '/student/jobs',
+    COUNSELORS: '/student/counselors',
+    BOOKINGS: '/student/bookings',
+    AI_ASSISTANT: '/student/ai-assistant',
+    RESUME_ANALYZE: '/student/ai-resume-analyze',
+    INTERVIEW_PREP: '/student/ai-interview-prep',
+  },
+  COUNSELOR: {
+    PROFILE: '/counselor/profile',
+    REQUESTS: '/counselor/student-requests',
+    STUDENTS: '/counselor/assigned-students',
+    SESSIONS: '/counselor/sessions',
+    EARNINGS: '/counselor/earnings',
+    RESOURCES: '/counselor/learning-resources',
+  },
+  ADMIN: {
+    USERS: '/admin/users',
+    STUDENTS: '/admin/students',
+    COUNSELORS: '/admin/counselors',
+    COURSES: '/admin/courses',
+    ROADMAPS: '/admin/roadmaps',
+    JOBS: '/admin/jobs',
+    AI_CONFIG: '/admin/ai-management',
+    AUDIT_LOGS: '/admin/audit-logs',
+    SYSTEM_SETTINGS: '/admin/system-settings',
+  }
+};

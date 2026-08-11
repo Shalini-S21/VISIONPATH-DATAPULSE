@@ -1,0 +1,14 @@
+com\visionpath\jobs\repository\JobApplicationRepository.class
+com\visionpath\jobs\repository\JobRepository.class
+com\visionpath\jobs\entity\JobApplication.class
+com\visionpath\jobs\entity\JobListing.class
+com\visionpath\jobs\exception\GlobalExceptionHandler.class
+com\visionpath\jobs\entity\JobListing$JobListingBuilder.class
+com\visionpath\jobs\config\SwaggerConfig.class
+com\visionpath\jobs\entity\Job.class
+com\visionpath\jobs\JobsApplication.class
+com\visionpath\jobs\entity\SavedJob.class
+com\visionpath\jobs\repository\JobListingRepository.class
+com\visionpath\jobs\repository\SavedJobRepository.class
+com\visionpath\jobs\controller\JobController.class
+com\visionpath\jobs\service\JobsService.class

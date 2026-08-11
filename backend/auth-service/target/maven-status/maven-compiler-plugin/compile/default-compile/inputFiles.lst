@@ -1,0 +1,15 @@
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\AuthApplication.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\config\SwaggerConfig.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\controller\AuthController.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\dto\ApiResponse.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\dto\AuthDataResponse.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\dto\ChangePasswordRequest.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\dto\LoginRequest.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\dto\LoginResponse.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\dto\RegisterRequest.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\entity\User.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\exception\GlobalExceptionHandler.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\repository\UserRepository.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\security\JwtTokenProvider.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\security\SecurityConfig.java
+D:\Vision-path\backend\auth-service\src\main\java\com\visionpath\auth\service\AuthService.java

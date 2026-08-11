@@ -1,0 +1,104 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      # Global CORS — allows the React frontend at localhost:5173
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - "http://localhost:5173"
+              - "http://localhost:3000"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowed-headers: "*"
+            allow-credentials: true
+            max-age: 3600
+
+      # Static routes — no Eureka, no service discovery
+      routes:
+
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+
+        - id: student-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/students/**
+
+        - id: career-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/careers/**
+
+        - id: education-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/education/**
+
+        - id: jobs-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/jobs/**
+
+        - id: assessment-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/assessments/**
+
+        - id: ai-mentor-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/ai/**
+
+        - id: study-plan-service
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/study-plans/**
+
+        - id: progress-service
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/progress/**
+
+        - id: counselor-service
+          uri: http://localhost:8090
+          predicates:
+            - Path=/api/counselors/**
+
+        - id: notification-service
+          uri: http://localhost:8091
+          predicates:
+            - Path=/api/notifications/**
+
+        - id: admin-service
+          uri: http://localhost:8092
+          predicates:
+            - Path=/api/admin/**
+
+# JWT secret — must match the secret in auth-service
+app:
+  jwt:
+    secret: ${JWT_SECRET:VisionPathSuperSecretKey2024VisionPathSuperSecretKey2024}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO

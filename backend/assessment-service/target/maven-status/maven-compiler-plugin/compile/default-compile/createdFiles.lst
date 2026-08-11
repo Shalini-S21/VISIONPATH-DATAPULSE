@@ -1,0 +1,11 @@
+com\visionpath\assessment\repository\AssessmentRepository.class
+com\visionpath\assessment\repository\QuestionRepository.class
+com\visionpath\assessment\entity\Question.class
+com\visionpath\assessment\exception\GlobalExceptionHandler.class
+com\visionpath\assessment\entity\Assessment.class
+com\visionpath\assessment\controller\AssessmentController.class
+com\visionpath\assessment\repository\AssessmentResultRepository.class
+com\visionpath\assessment\config\SwaggerConfig.class
+com\visionpath\assessment\AssessmentApplication.class
+com\visionpath\assessment\entity\AssessmentResult.class
+com\visionpath\assessment\service\AssessmentService.class
