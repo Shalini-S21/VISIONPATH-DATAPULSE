@@ -13,7 +13,7 @@
           if (saved !== null) {
             isDark = saved === 'dark' || saved === 'true' || saved === '"dark"';
           } else {
-            isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            isDark = false; // Default to Light Mode
           }
           if (isDark) {
             document.documentElement.classList.add('dark');

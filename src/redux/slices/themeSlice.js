@@ -13,7 +13,7 @@ const getInitialTheme = () => {
       return saved === 'dark' || saved === 'true';
     }
   }
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return false; // Default to Light Mode
 };
 
 const initialDarkMode = getInitialTheme();

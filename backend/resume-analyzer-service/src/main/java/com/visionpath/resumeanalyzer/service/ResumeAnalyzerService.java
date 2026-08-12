@@ -25,7 +25,7 @@ public class ResumeAnalyzerService {
     @Value("${app.openai.api-key:}")
     private String apiKey;
 
-    @Value("${app.openai.model:gpt-3.5-turbo}")
+    @Value("${app.openai.model:gpt-4o-mini}")
     private String model;
 
     private final ObjectMapper objectMapper = new ObjectMapper();

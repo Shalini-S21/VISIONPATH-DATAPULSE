@@ -7,103 +7,156 @@ spring:
 
   cloud:
     gateway:
-      # Global CORS — allows the React frontend at localhost:5173
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowed-origins:
-              - "http://localhost:5173"
-              - "http://localhost:3000"
-            allowed-methods:
-              - GET
-              - POST
-              - PUT
-              - PATCH
-              - DELETE
-              - OPTIONS
-            allowed-headers: "*"
-            allow-credentials: true
-            max-age: 3600
+      server:
+        webflux:
 
-      # Static routes — no Eureka, no service discovery
-      routes:
+          # ==============================
+          # GLOBAL CORS CONFIGURATION
+          # ==============================
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origin-patterns:
+                  - "*"
+                allowed-origins:
+                  - "http://localhost:5173"
+                  - "http://localhost:5174"
+                  - "http://localhost:3000"
+                  - "http://127.0.0.1:5173"
+                  - "http://127.0.0.1:5174"
+                allowed-methods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowed-headers:
+                  - "*"
+                allow-credentials: true
+                max-age: 3600
 
-        - id: auth-service
-          uri: http://localhost:8081
-          predicates:
-            - Path=/api/auth/**
+          # ==============================
+          # MICROSERVICE ROUTES
+          # ==============================
+          routes:
 
-        - id: student-service
-          uri: http://localhost:8082
-          predicates:
-            - Path=/api/students/**
+            # --------------------------------
+            # AUTH SERVICE - 8081
+            # --------------------------------
+            - id: auth-service
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/auth/**
 
-        - id: career-service
-          uri: http://localhost:8083
-          predicates:
-            - Path=/api/careers/**
+            # --------------------------------
+            # STUDENT SERVICE - 8082
+            # --------------------------------
+            - id: student-service
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/students/**
 
-        - id: education-service
-          uri: http://localhost:8084
-          predicates:
-            - Path=/api/education/**
+            # --------------------------------
+            # CAREER SERVICE - 8083
+            # --------------------------------
+            - id: career-service
+              uri: http://localhost:8083
+              predicates:
+                - Path=/api/careers/**
 
-        - id: jobs-service
-          uri: http://localhost:8085
-          predicates:
-            - Path=/api/jobs/**
+            # --------------------------------
+            # EDUCATION SERVICE - 8084
+            # --------------------------------
+            - id: education-service
+              uri: http://localhost:8084
+              predicates:
+                - Path=/api/education/**
 
-        - id: assessment-service
-          uri: http://localhost:8086
-          predicates:
-            - Path=/api/assessments/**
+            # --------------------------------
+            # JOBS SERVICE - 8085
+            # --------------------------------
+            - id: jobs-service
+              uri: http://localhost:8085
+              predicates:
+                - Path=/api/jobs/**
 
-        - id: ai-mentor-service
-          uri: http://localhost:8087
-          predicates:
-            - Path=/api/ai/**
+            # --------------------------------
+            # ASSESSMENT SERVICE - 8086
+            # --------------------------------
+            - id: assessment-service
+              uri: http://localhost:8086
+              predicates:
+                - Path=/api/assessments/**
 
-        - id: study-plan-service
-          uri: http://localhost:8088
-          predicates:
-            - Path=/api/study-plans/**
+            # --------------------------------
+            # AI MENTOR SERVICE - 8087
+            # --------------------------------
+            - id: ai-mentor-service
+              uri: http://localhost:8087
+              predicates:
+                - Path=/api/ai/**
 
-        - id: progress-service
-          uri: http://localhost:8089
-          predicates:
-            - Path=/api/progress/**
+            # --------------------------------
+            # STUDY PLAN SERVICE - 8088
+            # --------------------------------
+            - id: study-plan-service
+              uri: http://localhost:8088
+              predicates:
+                - Path=/api/study-plans/**
 
-        - id: counselor-service
-          uri: http://localhost:8090
-          predicates:
-            - Path=/api/counselors/**
+            # --------------------------------
+            # PROGRESS SERVICE - 8089
+            # --------------------------------
+            - id: progress-service
+              uri: http://localhost:8089
+              predicates:
+                - Path=/api/progress/**
 
-        - id: notification-service
-          uri: http://localhost:8091
-          predicates:
-            - Path=/api/notifications/**
+            # --------------------------------
+            # COUNSELOR SERVICE - 8090
+            # --------------------------------
+            - id: counselor-service
+              uri: http://localhost:8090
+              predicates:
+                - Path=/api/counselors/**
 
-        - id: admin-service
-          uri: http://localhost:8092
-          predicates:
-            - Path=/api/admin/**
+            # --------------------------------
+            # NOTIFICATION SERVICE - 8091
+            # --------------------------------
+            - id: notification-service
+              uri: http://localhost:8091
+              predicates:
+                - Path=/api/notifications/**
 
-        - id: resume-analyzer-service
-          uri: http://localhost:8093
-          predicates:
-            - Path=/api/resumes/**
+            # --------------------------------
+            # ADMIN SERVICE - 8092
+            # --------------------------------
+            - id: admin-service
+              uri: http://localhost:8092
+              predicates:
+                - Path=/api/admin/**
 
-# JWT secret — must match the secret in auth-service
-app:
-  jwt:
-    secret: ${JWT_SECRET:VisionPathSuperSecretKey2024VisionPathSuperSecretKey2024}
+            # --------------------------------
+            # RESUME ANALYZER SERVICE - 8093
+            # --------------------------------
+            - id: resume-analyzer-service
+              uri: http://localhost:8093
+              predicates:
+                - Path=/api/resumes/**
 
+
+# ==========================================
+# ACTUATOR
+# ==========================================
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include:
+          - health
+          - info
 
-logging:
-  level:
-    org.springframework.cloud.gateway: INFO
+  endpoint:
+    health:
+      show-details: always
