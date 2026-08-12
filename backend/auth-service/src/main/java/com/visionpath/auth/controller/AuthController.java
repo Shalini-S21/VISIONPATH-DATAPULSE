@@ -49,6 +49,22 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Password changed successfully", null));
     }
 
+    // POST /api/auth/forgot-password
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok(ApiResponse.success(
+            "If an account with that email exists, a password reset link has been sent.", null));
+    }
+
+    // POST /api/auth/reset-password
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.success(
+            "Password reset successful. You can now log in with your new password.", null));
+    }
+
     private String extractToken(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Authorization header missing or invalid");

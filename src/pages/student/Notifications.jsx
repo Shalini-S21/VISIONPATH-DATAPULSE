@@ -1,10 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
+import notificationService from '../../services/notificationService';
 import { Bell, CheckCheck, Compass, Calendar, BookOpen, ShieldAlert } from 'lucide-react';
 import Button from '../../components/ui/Button';
 
 export const Notifications = () => {
-  const { notifications, markAsRead, markAllAsRead } = useNotification();
+  const { user } = useAuth();
+  const { notifications: reduxNotifications, markAsRead: reduxMarkAsRead, markAllAsRead: reduxMarkAllAsRead } = useNotification();
+  const [notifications, setNotifications] = useState(reduxNotifications);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user?.id) return;
+      try {
+        const res = await notificationService.getUserNotifications(user.id);
+        const data = res.data || res;
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((n) => ({
+            id: n.id,
+            title: n.title || 'System Notification',
+            message: n.message || n.content || 'You have a new update.',
+            timestamp: n.createdAt ? n.createdAt.split('T')[0] : 'Recent',
+            read: n.read || n.isRead || false,
+          }));
+          setNotifications(mapped);
+        }
+      } catch (err) {
+        console.warn('Backend getUserNotifications notice:', err?.message || err);
+      }
+    };
+    fetchNotifications();
+  }, [user]);
+
+  const handleMarkAsRead = async (id) => {
+    reduxMarkAsRead(id);
+    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+    try {
+      await notificationService.markAsRead(id);
+    } catch (err) {
+      console.warn('Backend markAsRead notice:', err?.message || err);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    reduxMarkAllAsRead();
+    setNotifications(notifications.map(n => ({ ...n, read: true })));
+    try {
+      if (user?.id) {
+        await notificationService.markAllAsRead(user.id);
+      }
+    } catch (err) {
+      console.warn('Backend markAllAsRead notice:', err?.message || err);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -18,7 +67,7 @@ export const Notifications = () => {
             System updates, session alerts, roadmap milestones, and ATS score reports
           </p>
         </div>
-        <Button variant="outline" size="sm" icon={CheckCheck} onClick={markAllAsRead}>
+        <Button variant="outline" size="sm" icon={CheckCheck} onClick={handleMarkAllAsRead}>
           Mark All As Read
         </Button>
       </div>
@@ -27,7 +76,7 @@ export const Notifications = () => {
         {notifications.map((item) => (
           <div
             key={item.id}
-            onClick={() => markAsRead(item.id)}
+            onClick={() => handleMarkAsRead(item.id)}
             className={`p-4 rounded-2xl border transition-colors flex items-start gap-4 cursor-pointer ${
               item.read
                 ? 'bg-white dark:bg-slate-900 border-gray-200/80 dark:border-slate-800'

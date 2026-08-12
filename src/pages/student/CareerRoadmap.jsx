@@ -1,23 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Map, CheckCircle2, Clock, PlayCircle, Sparkles, BookOpen } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import studyPlanService from '../../services/studyPlanService';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import toast from 'react-hot-toast';
 
 export const CareerRoadmap = () => {
+  const { user } = useAuth();
   const { activeRoadmap } = useSelector((state) => state.student);
   const [roadmapSteps, setRoadmapSteps] = useState(activeRoadmap.steps);
 
-  const toggleStep = (id) => {
-    setRoadmapSteps(roadmapSteps.map(s => {
+  useEffect(() => {
+    const fetchPlans = async () => {
+      if (!user?.id) return;
+      try {
+        const res = await studyPlanService.getPlansByUser(user.id);
+        const data = res.data || res;
+        if (Array.isArray(data) && data.length > 0 && data[0].tasks) {
+          const mapped = data[0].tasks.map((t, idx) => ({
+            id: t.id || idx + 1,
+            title: t.taskName || t.title || `Module ${idx + 1}`,
+            status: t.completed ? 'completed' : 'in-progress',
+            duration: '2 Weeks',
+          }));
+          setRoadmapSteps(mapped);
+        }
+      } catch (err) {
+        console.warn('Backend getPlansByUser notice:', err?.message || err);
+      }
+    };
+    fetchPlans();
+  }, [user]);
+
+  const toggleStep = async (id) => {
+    const updated = roadmapSteps.map(s => {
       if (s.id === id) {
         const nextStatus = s.status === 'completed' ? 'in-progress' : s.status === 'in-progress' ? 'pending' : 'completed';
         toast.success(`Milestone '${s.title}' set to ${nextStatus.toUpperCase()}`);
         return { ...s, status: nextStatus };
       }
       return s;
-    }));
+    });
+    setRoadmapSteps(updated);
+
+    try {
+      const targetStep = updated.find(s => s.id === id);
+      if (targetStep) {
+        await studyPlanService.updateTask(id, {
+          taskName: targetStep.title,
+          completed: targetStep.status === 'completed',
+        });
+      }
+    } catch (err) {
+      console.warn('Backend updateTask notice:', err?.message || err);
+    }
   };
 
   return (

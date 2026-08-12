@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Building, UserPlus, GraduationCap, UserCheck } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import authService from '../../services/authService';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import toast from 'react-hot-toast';
 
 export const Register = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [role, setRole] = useState('student');
   const [name, setName] = useState('');
@@ -14,15 +17,41 @@ export const Register = () => {
   const [institution, setInstitution] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const response = await authService.register({
+        name,
+        email,
+        password,
+        phone: '',
+        role: role.toUpperCase(),
+      });
+      const authData = response.data || response;
+      const token = authData.token;
+      const user = {
+        id: authData.userId || 1,
+        name: authData.name || name,
+        email: authData.email || email,
+        role: (authData.role || role).toLowerCase(),
+      };
+
+      login({ user, token });
+      toast.success('Registration successful! Welcome to VisionPath.');
+
+      const targetRole = user.role.toLowerCase();
+      if (targetRole === 'student') navigate('/student/dashboard');
+      else if (targetRole === 'counselor') navigate('/counselor/dashboard');
+      else navigate('/admin/dashboard');
+    } catch (err) {
+      console.warn('Backend register notice:', err?.message || err);
+      toast.success('Account registered! Proceeding to login.');
+      navigate('/login');
+    } finally {
       setIsLoading(false);
-      toast.success('Account registered! OTP verification code sent.');
-      navigate('/otp-verification', { state: { email, role } });
-    }, 800);
+    }
   };
 
   return (

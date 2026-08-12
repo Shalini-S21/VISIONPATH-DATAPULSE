@@ -5,25 +5,39 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import toast from 'react-hot-toast';
 
+import { useSearchParams } from 'react-router-dom';
+import authService from '../../services/authService';
+
 export const ResetPassword = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [token, setToken] = useState(searchParams.get('token') || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
       return;
     }
+    if (!token) {
+      toast.error('Reset token is required');
+      return;
+    }
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success('Password updated successfully! Please log in.');
+    try {
+      const res = await authService.resetPassword({ token, newPassword: password });
+      const msg = res?.data?.message || 'Password updated successfully! Please log in.';
+      toast.success(msg);
       navigate('/login');
-    }, 800);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || 'Reset password failed.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -36,6 +50,15 @@ export const ResetPassword = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="Reset Token"
+          type="text"
+          placeholder="Paste security reset token"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+          required
+        />
+
         <Input
           label="New Password"
           type="password"

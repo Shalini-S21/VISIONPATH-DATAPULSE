@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Bot, Send, User, Sparkles, RefreshCw } from 'lucide-react';
+import aiMentorService from '../../services/aiMentorService';
 import Button from '../../components/ui/Button';
 import { addAiMessage } from '../../redux/slices/studentSlice';
 
@@ -10,7 +11,7 @@ export const AICareerAssistant = () => {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
@@ -20,16 +21,21 @@ export const AICareerAssistant = () => {
     setInputText('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      setIsTyping(false);
+    try {
+      const res = await aiMentorService.ask(prompt, 'Student Career Assistant');
+      const data = res.data || res;
+      const answer = data.answer || data.message || `Great question regarding "${prompt}". Based on VisionPath hiring analytics, focusing on modern React 19 architecture, state management (Redux Toolkit), and system design gives candidates a 74% higher interview callback rate.`;
+      dispatch(addAiMessage({ id: Date.now() + 1, sender: 'ai', text: answer, time: 'Just now' }));
+    } catch (err) {
+      console.warn('Backend aiMentorService notice:', err?.message || err);
       let replyText = `Great question regarding "${prompt}". Based on VisionPath hiring analytics, focusing on modern React 19 architecture, state management (Redux Toolkit), and system design gives candidates a 74% higher interview callback rate.`;
-      
       if (prompt.toLowerCase().includes('salary')) {
         replyText = `Senior Full Stack AI Engineers in top US tech hubs earn an average base salary of $165,000 - $220,000 with additional equity.`;
       }
-      
       dispatch(addAiMessage({ id: Date.now() + 1, sender: 'ai', text: replyText, time: 'Just now' }));
-    }, 1000);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (

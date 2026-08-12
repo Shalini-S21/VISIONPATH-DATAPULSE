@@ -5,20 +5,27 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import toast from 'react-hot-toast';
 
+import authService from '../../services/authService';
+
 export const ForgotPassword = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success('Password reset link sent to your email!');
+    try {
+      const res = await authService.forgotPassword({ email });
+      const msg = res?.data?.message || 'If an account with that email exists, a password reset link has been sent.';
+      toast.success(msg);
       navigate('/reset-password', { state: { email } });
-    }, 800);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || 'Password reset request failed.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

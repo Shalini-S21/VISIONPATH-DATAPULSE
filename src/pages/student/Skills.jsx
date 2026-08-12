@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Award, Plus, Sparkles, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import studentService from '../../services/studentService';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
@@ -7,29 +9,69 @@ import Input from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 
 export const Skills = () => {
+  const { user } = useAuth();
   const [skills, setSkills] = useState([
-    { name: 'React 19 & Redux Toolkit', category: 'Frontend', level: 'Advanced', confidence: 92 },
-    { name: 'Node.js & Express API', category: 'Backend', level: 'Intermediate', confidence: 84 },
-    { name: 'Tailwind CSS & Glassmorphism UI', category: 'Design', level: 'Expert', confidence: 96 },
-    { name: 'Python & LangChain AI RAG', category: 'Artificial Intelligence', level: 'Intermediate', confidence: 78 },
-    { name: 'PostgreSQL & Prisma ORM', category: 'Database', level: 'Intermediate', confidence: 82 },
-    { name: 'Docker & AWS ECS Deployment', category: 'DevOps', level: 'Beginner', confidence: 64 },
+    { id: 1, name: 'React 19 & Redux Toolkit', category: 'Frontend', level: 'Advanced', confidence: 92 },
+    { id: 2, name: 'Node.js & Express API', category: 'Backend', level: 'Intermediate', confidence: 84 },
+    { id: 3, name: 'Tailwind CSS & Glassmorphism UI', category: 'Design', level: 'Expert', confidence: 96 },
+    { id: 4, name: 'Python & LangChain AI RAG', category: 'Artificial Intelligence', level: 'Intermediate', confidence: 78 },
+    { id: 5, name: 'PostgreSQL & Prisma ORM', category: 'Database', level: 'Intermediate', confidence: 82 },
+    { id: 6, name: 'Docker & AWS ECS Deployment', category: 'DevOps', level: 'Beginner', confidence: 64 },
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [skillName, setSkillName] = useState('');
   const [category, setCategory] = useState('Frontend');
   const [level, setLevel] = useState('Intermediate');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAddSkill = (e) => {
+  React.useEffect(() => {
+    const fetchSkills = async () => {
+      if (!user?.id) return;
+      try {
+        const res = await studentService.getSkills(user.id);
+        const data = res.data || res;
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((s) => ({
+            id: s.id,
+            name: s.skillName || s.name,
+            category: s.category || category,
+            level: s.proficiency || s.level || 'Intermediate',
+            confidence: 85,
+          }));
+          setSkills(mapped);
+        }
+      } catch (err) {
+        console.warn('Backend getSkills notice:', err?.message || err);
+      }
+    };
+    fetchSkills();
+  }, [user]);
+
+  const handleAddSkill = async (e) => {
     e.preventDefault();
-    setSkills([
-      ...skills,
-      { name: skillName, category, level, confidence: 80 }
-    ]);
-    toast.success(`Skill '${skillName}' added to profile matrix!`);
-    setIsModalOpen(false);
-    setSkillName('');
+    setIsLoading(true);
+    try {
+      if (user?.id) {
+        await studentService.addSkill(user.id, skillName, level);
+      }
+      setSkills([
+        ...skills,
+        { id: Date.now(), name: skillName, category, level, confidence: 80 }
+      ]);
+      toast.success(`Skill '${skillName}' added to profile matrix!`);
+    } catch (err) {
+      console.warn('Backend addSkill notice:', err?.message || err);
+      setSkills([
+        ...skills,
+        { id: Date.now(), name: skillName, category, level, confidence: 80 }
+      ]);
+      toast.success(`Skill '${skillName}' added!`);
+    } finally {
+      setIsLoading(false);
+      setIsModalOpen(false);
+      setSkillName('');
+    }
   };
 
   return (

@@ -1,45 +1,65 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const getInitialTheme = () => {
-  const saved = localStorage.getItem('vp_dark_mode');
+  if (typeof window === 'undefined') return false;
+  const saved = localStorage.getItem('visionpath-theme') || localStorage.getItem('vp_dark_mode');
   if (saved !== null) {
-    return JSON.parse(saved);
+    try {
+      const parsed = JSON.parse(saved);
+      if (typeof parsed === 'boolean') return parsed;
+      if (parsed === 'dark') return true;
+      if (parsed === 'light') return false;
+    } catch {
+      return saved === 'dark' || saved === 'true';
+    }
   }
   return window.matchMedia('(prefers-color-scheme: dark)').matches;
 };
 
 const initialDarkMode = getInitialTheme();
-if (initialDarkMode) {
-  document.documentElement.classList.add('dark');
-} else {
-  document.documentElement.classList.remove('dark');
-}
+
+const applyThemeToDOM = (isDark) => {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  const body = document.body;
+  
+  if (isDark) {
+    root.classList.add('dark');
+    root.setAttribute('data-theme', 'dark');
+    if (body) body.classList.add('dark');
+  } else {
+    root.classList.remove('dark');
+    root.setAttribute('data-theme', 'light');
+    if (body) body.classList.remove('dark');
+  }
+};
+
+applyThemeToDOM(initialDarkMode);
 
 const themeSlice = createSlice({
   name: 'theme',
   initialState: {
     darkMode: initialDarkMode,
+    isDark: initialDarkMode,
   },
   reducers: {
     toggleTheme: (state) => {
-      state.darkMode = !state.darkMode;
-      localStorage.setItem('vp_dark_mode', JSON.stringify(state.darkMode));
-      if (state.darkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      const next = !state.darkMode;
+      state.darkMode = next;
+      state.isDark = next;
+      localStorage.setItem('visionpath-theme', next ? 'dark' : 'light');
+      localStorage.setItem('vp_dark_mode', JSON.stringify(next));
+      applyThemeToDOM(next);
     },
     setDarkMode: (state, action) => {
-      state.darkMode = action.payload;
-      localStorage.setItem('vp_dark_mode', JSON.stringify(state.darkMode));
-      if (state.darkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
-  }
+      const next = Boolean(action.payload);
+      state.darkMode = next;
+      state.isDark = next;
+      localStorage.setItem('visionpath-theme', next ? 'dark' : 'light');
+      localStorage.setItem('vp_dark_mode', JSON.stringify(next));
+      applyThemeToDOM(next);
+    },
+  },
 });
 
 export const { toggleTheme, setDarkMode } = themeSlice.actions;

@@ -14,6 +14,7 @@ import {
   FileCheck,
   Video
 } from 'lucide-react';
+import progressService from '../../services/progressService';
 import StatCard from '../../components/cards/StatCard';
 import { AreaChartWidget, BarChartWidget } from '../../components/charts/ChartWidgets';
 import Button from '../../components/ui/Button';
@@ -21,6 +22,23 @@ import Button from '../../components/ui/Button';
 export const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
   const { activeRoadmap, enrolledCourses, assessments, resumeData } = useSelector((state) => state.student);
+  const [progressData, setProgressData] = React.useState(null);
+
+  React.useEffect(() => {
+    const fetchProgress = async () => {
+      if (!user?.id) return;
+      try {
+        const res = await progressService.getProgress(user.id);
+        const data = res.data || res;
+        if (data) {
+          setProgressData(data);
+        }
+      } catch (err) {
+        console.warn('Backend getProgress notice:', err?.message || err);
+      }
+    };
+    fetchProgress();
+  }, [user]);
 
   const learningActivityData = [
     { name: 'Mon', value: 2.5 },

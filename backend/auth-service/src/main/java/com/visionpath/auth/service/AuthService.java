@@ -11,6 +11,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.visionpath.auth.entity.PasswordResetToken;
+import com.visionpath.auth.repository.PasswordResetTokenRepository;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import org.springframework.web.client.RestTemplate;
+
 @Service
 public class AuthService {
 
@@ -19,13 +29,16 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       JwtTokenProvider jwtTokenProvider) {
+                       JwtTokenProvider jwtTokenProvider,
+                       PasswordResetTokenRepository passwordResetTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
 
     // Seed default users on startup
@@ -106,6 +119,69 @@ public class AuthService {
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+    }
+
+    public void forgotPassword(ForgotPasswordRequest request) {
+        userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+            String rawToken = UUID.randomUUID().toString();
+            String hashedToken = hashToken(rawToken);
+            LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(30);
+
+            PasswordResetToken resetToken = new PasswordResetToken(user.getId(), hashedToken, expiryDate);
+            passwordResetTokenRepository.save(resetToken);
+
+            sendNotification(user.getId(), "Password Reset Request", 
+                "Password reset requested. Use reset token: " + rawToken + " within 30 minutes.");
+        });
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        String hashedToken = hashToken(request.getToken());
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByHashedToken(hashedToken)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired password reset token"));
+
+        if (resetToken.isUsed() || resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Invalid or expired password reset token");
+        }
+
+        User user = userRepository.findById(resetToken.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
+    }
+
+    private String hashToken(String rawToken) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Error processing reset token", e);
+        }
+    }
+
+    private void sendNotification(Long userId, String title, String message) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            Map<String, Object> req = new HashMap<>();
+            req.put("userId", userId);
+            req.put("title", title);
+            req.put("message", message);
+            req.put("type", "SECURITY");
+            restTemplate.postForObject("http://localhost:8091/api/notifications", req, String.class);
+        } catch (Exception e) {
+            log.warn("Notification delivery warning: {}", e.getMessage());
+        }
     }
 
     private AuthDataResponse buildResponse(String token, User user) {

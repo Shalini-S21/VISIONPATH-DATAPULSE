@@ -57,17 +57,20 @@ echo [12/13] Starting Notification Service (port 8091)...
 start "Notification-Service" cmd /k "cd /d %BASE_DIR%notification-service && mvn spring-boot:run"
 timeout /t 5 /nobreak > nul
 
-echo [13/13] Starting Admin Service (port 8092)...
+echo [13/14] Starting Admin Service (port 8092)...
 start "Admin-Service" cmd /k "cd /d %BASE_DIR%admin-service && mvn spring-boot:run"
+timeout /t 5 /nobreak > nul
+
+echo [14/14] Starting Resume Analyzer Service (port 8093)...
+start "Resume-Analyzer-Service" cmd /k "cd /d %BASE_DIR%resume-analyzer-service && mvn spring-boot:run"
 
 echo.
 echo =====================================================
-echo   All services started! Wait 90 seconds for all
-echo   services to fully start, then test:
+echo   All 13 microservices + Gateway started!
 echo.
 echo   API Gateway:   http://localhost:8080/actuator/health
 echo   Auth Swagger:  http://localhost:8081/swagger-ui/index.html
-echo   Admin Stats:   http://localhost:8080/api/admin/stats
+echo   Resume Swagger:http://localhost:8093/swagger-ui/index.html
 echo =====================================================
 echo.
 pause

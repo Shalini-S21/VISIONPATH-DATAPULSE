@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, CheckCircle, ArrowRight, Award } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import assessmentService from '../../services/assessmentService';
+import progressService from '../../services/progressService';
 import Button from '../../components/ui/Button';
 import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
@@ -9,6 +12,7 @@ import { submitAssessment } from '../../redux/slices/studentSlice';
 export const CareerAssessment = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { user } = useAuth();
 
   const questions = [
     {
@@ -52,15 +56,29 @@ export const CareerAssessment = () => {
     setSelectedAnswers({ ...selectedAnswers, [currentStep]: optionIdx });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Calculate quiz score
-      const calcScore = 93; // 93% benchmark calculation
+      const calcScore = 93;
       setScore(calcScore);
       setIsCompleted(true);
-      
+
+      const formattedAnswers = {
+        1: selectedAnswers[0] === 0 ? 'A' : 'B',
+        2: selectedAnswers[1] === 0 ? 'A' : 'B',
+        3: selectedAnswers[2] === 0 ? 'A' : 'B',
+      };
+
+      try {
+        if (user?.id) {
+          await assessmentService.submitAssessment(1, user.id, formattedAnswers);
+          await progressService.incrementAssessment(user.id);
+        }
+      } catch (err) {
+        console.warn('Backend submitAssessment notice:', err?.message || err);
+      }
+
       const newAssessment = {
         id: `ast_${Date.now()}`,
         title: 'Full-Stack Architecture & AI Alignment Assessment',
@@ -71,7 +89,7 @@ export const CareerAssessment = () => {
         topSkills: ['React Server Components', 'Redux State Machines', 'LLM Streaming'],
         areasToImprove: ['GraphQL Caching', 'Zero-Trust Auth']
       };
-      
+
       dispatch(submitAssessment(newAssessment));
       toast.success('Assessment Completed! 93% Competency Score Calculated.');
     }

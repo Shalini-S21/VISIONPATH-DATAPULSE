@@ -45,17 +45,12 @@ export const LeftSidebar = ({ isMobileOpen, onCloseMobile }) => {
     { label: 'Assessment History', path: '/student/assessment-history', icon: Clock },
     { label: 'Recommendations', path: '/student/career-recommendation', icon: TrendingUp },
     { label: 'Career Roadmap', path: '/student/career-roadmap', icon: Map },
-    { label: 'Learning Dashboard', path: '/student/learning-dashboard', icon: BookOpen },
     { label: 'Courses Catalog', path: '/student/courses', icon: Layers },
     { label: 'Job Portal', path: '/student/job-portal', icon: Briefcase },
-    { label: 'Resume Builder', path: '/student/resume-builder', icon: FileText },
-    { label: 'AI Career Assistant', path: '/student/ai-career-assistant', icon: Bot },
-    { label: 'AI Resume Analyzer', path: '/student/ai-resume-analyzer', icon: FileCheck },
-    { label: 'AI Interview Prep', path: '/student/ai-interview-prep', icon: Video },
+    { label: 'AI Career Mentor', path: '/student/ai-career-assistant', icon: Bot },
+    { label: 'Resume Analyzer', path: '/student/ai-resume-analyzer', icon: FileCheck },
     { label: 'Book Counselor', path: '/student/counselor-booking', icon: Calendar },
-    { label: 'Messages', path: '/student/messages', icon: MessageSquare },
     { label: 'Notifications', path: '/student/notifications', icon: Bell },
-    { label: 'Analytics', path: '/student/analytics', icon: BarChart3 },
     { label: 'Settings', path: '/student/settings', icon: Settings },
   ];
 
@@ -64,17 +59,7 @@ export const LeftSidebar = ({ isMobileOpen, onCloseMobile }) => {
     { label: 'My Profile', path: '/counselor/profile', icon: User },
     { label: 'Student Requests', path: '/counselor/student-requests', icon: Users },
     { label: 'Assigned Students', path: '/counselor/assigned-students', icon: UserCheck },
-    { label: 'Assessment Reports', path: '/counselor/assessment-reports', icon: ScrollText },
-    { label: 'Career Suggestions', path: '/counselor/career-suggestions', icon: Sparkles },
-    { label: 'Session Calendar', path: '/counselor/session-calendar', icon: Calendar },
-    { label: 'Video Sessions', path: '/counselor/video-sessions', icon: Video },
-    { label: 'Messages', path: '/counselor/messages', icon: MessageSquare },
-    { label: 'Learning Resources', path: '/counselor/learning-resources', icon: BookOpen },
-    { label: 'Upload Materials', path: '/counselor/upload-materials', icon: FolderOpen },
     { label: 'Notifications', path: '/counselor/notifications', icon: Bell },
-    { label: 'Analytics', path: '/counselor/analytics', icon: BarChart3 },
-    { label: 'Earnings', path: '/counselor/earnings', icon: DollarSign },
-    { label: 'Settings', path: '/counselor/settings', icon: Settings },
   ];
 
   const adminNavItems = [
@@ -85,15 +70,8 @@ export const LeftSidebar = ({ isMobileOpen, onCloseMobile }) => {
     { label: 'Career Catalogs', path: '/admin/career-management', icon: Compass },
     { label: 'Assessments Studio', path: '/admin/assessment-management', icon: Sparkles },
     { label: 'Course Studio', path: '/admin/course-management', icon: BookOpen },
-    { label: 'Roadmap Builder', path: '/admin/roadmap-management', icon: Map },
     { label: 'Job Listings', path: '/admin/job-management', icon: Briefcase },
-    { label: 'AI Models Config', path: '/admin/ai-management', icon: Bot },
-    { label: 'File Library', path: '/admin/file-management', icon: FolderOpen },
     { label: 'Notification Center', path: '/admin/notification-center', icon: Bell },
-    { label: 'System Reports', path: '/admin/reports', icon: ScrollText },
-    { label: 'Platform Analytics', path: '/admin/analytics', icon: BarChart3 },
-    { label: 'Audit Logs', path: '/admin/audit-logs', icon: Shield },
-    { label: 'System Settings', path: '/admin/system-settings', icon: Settings },
   ];
 
   const items = role === 'counselor' ? counselorNavItems : role === 'admin' ? adminNavItems : studentNavItems;

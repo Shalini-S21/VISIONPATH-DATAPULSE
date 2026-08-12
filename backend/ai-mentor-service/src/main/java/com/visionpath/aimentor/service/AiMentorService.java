@@ -1,50 +1,76 @@
 package com.visionpath.aimentor.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AiMentorService {
 
     private static final Logger log = LoggerFactory.getLogger(AiMentorService.class);
 
-    @Value("${app.ai.api-key:}")
+    @Value("${app.ai.api-key:${OPENAI_API_KEY:}}")
     private String apiKey;
 
-    @Value("${app.ai.provider:fallback}")
-    private String provider;
+    @Value("${app.ai.model:${OPENAI_MODEL:gpt-3.5-turbo}}")
+    private String model;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public String getAdvice(String question, String context) {
-        log.info("Received AI mentor request: provider={}, hasApiKey={}", provider, !apiKey.isBlank());
+        log.info("Received AI mentor request for model={}, hasApiKey={}", model, !apiKey.isBlank());
 
-        if (apiKey == null || apiKey.isBlank() || "fallback".equalsIgnoreCase(provider)) {
-            return generateFallbackAdvice(question, context);
+        if (apiKey != null && !apiKey.isBlank()) {
+            try {
+                return callOpenAiApi(question, context);
+            } catch (Exception e) {
+                log.error("OpenAI API call failed: {}", e.getMessage());
+                throw new RuntimeException("AI Mentor Service temporarily unavailable: " + e.getMessage(), e);
+            }
         }
 
-        // If an API key is provided in the future, you can implement the actual
-        // HTTP call to OpenAI, Gemini, Claude, etc., here.
-        // For this simple template, we use the fallback logic.
-        return "AI Integration is ready but not fully implemented. " + generateFallbackAdvice(question, context);
+        // If OPENAI_API_KEY is not configured yet, return clear environment configuration status
+        throw new RuntimeException("OpenAI API key is not configured on the backend. Please set the OPENAI_API_KEY environment variable.");
     }
 
-    private String generateFallbackAdvice(String question, String context) {
-        String lowerQ = question.toLowerCase();
+    private String callOpenAiApi(String question, String context) throws Exception {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "https://api.openai.com/v1/chat/completions";
 
-        if (lowerQ.contains("resume") || lowerQ.contains("cv")) {
-            return "Make sure your resume highlights your key achievements and matches the keywords in the job description. Keep it concise, ideally one page.";
-        } else if (lowerQ.contains("interview")) {
-            return "For interviews, practice the STAR method (Situation, Task, Action, Result) for behavioral questions. Research the company beforehand.";
-        } else if (lowerQ.contains("career") || lowerQ.contains("path")) {
-            return "Explore our Career Service module to see demand levels and required skills. Start by identifying your core interests and strengths.";
-        } else if (lowerQ.contains("study") || lowerQ.contains("learn")) {
-            return "Consistency is key. Break down your study goals into small, manageable daily tasks. Check our Study Plan module to organize your timeline.";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        String systemPrompt = "You are VisionPath AI Career Mentor, an enterprise career and technical skills advisor. " +
+                "Provide personalized, structured, actionable advice based on the student's question and context.";
+
+        String userPrompt = "Question: " + question + (context != null && !context.isBlank() ? "\nContext: " + context : "");
+
+        Map<String, Object> messageSystem = Map.of("role", "system", "content", systemPrompt);
+        Map<String, Object> messageUser = Map.of("role", "user", "content", userPrompt);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", model);
+        requestBody.put("messages", List.of(messageSystem, messageUser));
+        requestBody.put("temperature", 0.7);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            JsonNode rootNode = objectMapper.readTree(response.getBody());
+            return rootNode.path("choices").get(0).path("message").path("content").asText();
         }
 
-        return "That's a great question! Based on your context (" + context + "), I recommend focusing on continuous learning and building practical projects to demonstrate your skills.";
+        throw new RuntimeException("OpenAI API returned status code " + response.getStatusCode());
     }
 }

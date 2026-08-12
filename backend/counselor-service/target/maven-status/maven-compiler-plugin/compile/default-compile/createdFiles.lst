@@ -1,9 +1,0 @@
-com\visionpath\counselor\entity\Appointment.class
-com\visionpath\counselor\entity\CounselorProfile.class
-com\visionpath\counselor\exception\GlobalExceptionHandler.class
-com\visionpath\counselor\controller\CounselorController.class
-com\visionpath\counselor\repository\CounselorProfileRepository.class
-com\visionpath\counselor\config\SwaggerConfig.class
-com\visionpath\counselor\repository\AppointmentRepository.class
-com\visionpath\counselor\CounselorServiceApplication.class
-com\visionpath\counselor\service\CounselorService.class

@@ -4,7 +4,27 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vision-path</title>
+    <title>VisionPath — AI Career & Education Advisor</title>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('visionpath-theme') || localStorage.getItem('vp_dark_mode');
+          var isDark = false;
+          if (saved !== null) {
+            isDark = saved === 'dark' || saved === 'true' || saved === '"dark"';
+          } else {
+            isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          }
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

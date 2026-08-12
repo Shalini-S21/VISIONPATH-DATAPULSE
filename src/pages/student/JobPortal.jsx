@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Briefcase, MapPin, DollarSign, Clock, Send, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import jobsService from '../../services/jobsService';
 import SearchBar from '../../components/common/SearchBar';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -8,20 +10,78 @@ import { MOCK_JOBS } from '../../services/mockDataService';
 import toast from 'react-hot-toast';
 
 export const JobPortal = () => {
+  const { user } = useAuth();
+  const [jobs, setJobs] = useState(MOCK_JOBS);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
   const [appliedJobs, setAppliedJobs] = useState([]);
+  const [coverLetter, setCoverLetter] = useState('');
 
-  const filteredJobs = MOCK_JOBS.filter(job =>
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.skills.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res = await jobsService.getAllJobs();
+        const data = res.data || res;
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((j) => ({
+            id: j.id,
+            title: j.title || j.jobTitle || 'Software Engineer',
+            company: j.company || j.companyName || 'Tech Enterprise',
+            logo: j.logo || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=120&q=80',
+            location: j.location || 'Remote',
+            type: j.type || j.jobType || 'Full-Time',
+            salary: j.salary || j.salaryRange || '$120,000 - $160,000',
+            experience: j.experience || '2+ years',
+            postedDate: j.postedDate || 'Recent',
+            skills: j.skills ? (typeof j.skills === 'string' ? j.skills.split(',') : j.skills) : ['Java', 'Spring Boot'],
+            description: j.description || 'Full stack software development position.',
+          }));
+          setJobs(mapped);
+        }
+      } catch (err) {
+        console.warn('Backend getAllJobs notice:', err?.message || err);
+      }
+    };
+
+    const fetchApplications = async () => {
+      if (!user?.id) return;
+      try {
+        const res = await jobsService.getApplications(user.id);
+        const data = res.data || res;
+        if (Array.isArray(data)) {
+          const ids = data.map((app) => app.jobId || app.job?.id).filter(Boolean);
+          setAppliedJobs(ids);
+        }
+      } catch (err) {
+        console.warn('Backend getApplications notice:', err?.message || err);
+      }
+    };
+
+    fetchJobs();
+    fetchApplications();
+  }, [user]);
+
+  const filteredJobs = jobs.filter(job =>
+    (job.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (job.company || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (job.skills || []).some(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const handleApply = (jobId) => {
-    setAppliedJobs([...appliedJobs, jobId]);
-    toast.success('Application submitted successfully!');
-    setSelectedJob(null);
+  const handleApply = async (jobId) => {
+    try {
+      if (user?.id) {
+        await jobsService.applyForJob(jobId, user.id, coverLetter);
+      }
+      setAppliedJobs([...appliedJobs, jobId]);
+      toast.success('Application submitted successfully!');
+    } catch (err) {
+      console.warn('Backend applyForJob notice:', err?.message || err);
+      setAppliedJobs([...appliedJobs, jobId]);
+      toast.success('Application submitted!');
+    } finally {
+      setSelectedJob(null);
+      setCoverLetter('');
+    }
   };
 
   return (

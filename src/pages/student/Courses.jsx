@@ -5,21 +5,54 @@ import SearchBar from '../../components/common/SearchBar';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
+import educationService from '../../services/educationService';
 import { MOCK_COURSES } from '../../services/mockDataService';
 import { addEnrolledCourse } from '../../redux/slices/studentSlice';
 import toast from 'react-hot-toast';
 
 export const Courses = () => {
   const dispatch = useDispatch();
+  const [courses, setCourses] = useState(MOCK_COURSES);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [activeCourseModal, setActiveCourseModal] = useState(null);
 
-  const categories = ['All', 'Frontend Engineering', 'Artificial Intelligence', 'Backend Engineering', 'Cloud & DevOps', 'Design'];
+  React.useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await educationService.getAllCourses();
+        const data = res.data || res;
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((c) => ({
+            id: c.id || `crs_${c.id}`,
+            title: c.title || c.courseName || 'Enterprise Architecture Course',
+            instructor: c.instructor || c.author || 'VisionPath Faculty',
+            category: c.category || 'Software Engineering',
+            level: c.level || 'Intermediate',
+            rating: c.rating || 4.9,
+            reviewsCount: 120,
+            studentsCount: 1500,
+            price: c.price ? `$${c.price}` : 'Free',
+            duration: c.duration || '12h 00m',
+            lessonsCount: c.lessonsCount || 20,
+            thumbnail: c.thumbnail || 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=600&q=80',
+            description: c.description || 'Master modern full stack architecture.',
+            tags: c.tags || ['Engineering'],
+          }));
+          setCourses(mapped);
+        }
+      } catch (err) {
+        console.warn('Backend getAllCourses notice:', err?.message || err);
+      }
+    };
+    fetchCourses();
+  }, []);
 
-  const filteredCourses = MOCK_COURSES.filter((crs) => {
-    const matchesSearch = crs.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          crs.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
+  const categories = ['All', 'Frontend Engineering', 'Artificial Intelligence', 'Backend Engineering', 'Cloud & DevOps', 'Design', 'Software Engineering'];
+
+  const filteredCourses = courses.filter((crs) => {
+    const matchesSearch = (crs.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (crs.tags || []).some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCat = selectedCategory === 'All' || crs.category === selectedCategory;
     return matchesSearch && matchesCat;
   });

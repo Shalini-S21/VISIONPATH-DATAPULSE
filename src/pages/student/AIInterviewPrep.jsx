@@ -3,6 +3,8 @@ import { Video, Mic, Sparkles, CheckCircle2, Award, Play } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import toast from 'react-hot-toast';
 
+import aiMentorService from '../../services/aiMentorService';
+
 export const AIInterviewPrep = () => {
   const [activeSession, setActiveSession] = useState(false);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
@@ -18,7 +20,14 @@ export const AIInterviewPrep = () => {
     toast.success('Live AI Interview session started!');
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
+    const q = questions[currentQuestionIdx];
+    try {
+      await aiMentorService.ask(`Evaluate my response for interview question: ${q}`, 'Interview Prep');
+    } catch (err) {
+      console.warn('Backend aiMentorService notice:', err?.message || err);
+    }
+
     if (currentQuestionIdx < questions.length - 1) {
       setCurrentQuestionIdx(currentQuestionIdx + 1);
     } else {

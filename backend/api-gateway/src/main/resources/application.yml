@@ -88,6 +88,11 @@ spring:
           predicates:
             - Path=/api/admin/**
 
+        - id: resume-analyzer-service
+          uri: http://localhost:8093
+          predicates:
+            - Path=/api/resumes/**
+
 # JWT secret — must match the secret in auth-service
 app:
   jwt:

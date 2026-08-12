@@ -1,5 +1,0 @@
-com\visionpath\admin\exception\GlobalExceptionHandler.class
-com\visionpath\admin\service\AdminService.class
-com\visionpath\admin\AdminApplication.class
-com\visionpath\admin\config\SwaggerConfig.class
-com\visionpath\admin\controller\AdminController.class
